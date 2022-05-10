@@ -22,6 +22,9 @@ public class SelfOrgMap<V> {
         trainingCounts = new double[side][side];
     }
 
+    // TODO: Return a SOMPoint corresponding to the map square which has the
+    //  smallest distance compared to example.
+    // GOOD
     public SOMPoint bestFor(V example) {
         int bestX = 0;
         int bestY = 0;
@@ -46,17 +49,21 @@ public class SelfOrgMap<V> {
     //     c. Find the effective learning rate. Call effectiveLearningRate().
     //     d. Update the node with the average of itself and example, with example weighted by
     //        the effective learning rate.
+
     public void train(V example) {
+        // Find the best matching node
         SOMPoint bestNode = bestFor(example);
+        // For every node in the map
         for(int i = 0; i < getMapWidth(); i++){
             for(int j = 0; j < getMapHeight(); j++){
-                double distanceWeight = computeDistanceWeight(bestFor(getNode(i,j)), bestNode);
-                distanceWeight += trainingCounts[i][j];
+                double distanceWeight = computeDistanceWeight(new SOMPoint(i,j), bestNode);
+                trainingCounts[i][j] += distanceWeight;
                 double ELR = effectiveLearningRate(distanceWeight, trainingCounts[i][j]);
-                // step d. unsure how to do example weight calculation
+                map[i][j] = averager.weightedAverage(example, getNode(i, j), ELR);
             }
         }
     }
+
 
     // TODO: Find the distance between the locations of sp1 and sp2 in the
     //  self-organizing map. Next, scale the distance based on the map length,
@@ -64,18 +71,16 @@ public class SelfOrgMap<V> {
     //  should have small weights, subtract it from 1. Finally, make sure it
     //  is not any smaller than zero.
     public double computeDistanceWeight(SOMPoint sp1, SOMPoint sp2) {
-		Double dist = distance.applyAsDouble(map[sp1.x()][sp1.y()], map[sp2.x()][sp2.y()]);
-        dist = (1 - (dist/getMapWidth()));
-        if(dist >= 0){
-            return dist;
-        } else {
-            return 0.0;
-        }
+        double dist = sp1.distanceTo(sp2);
+        dist = dist/getMapWidth();
+        dist = 1 - dist;
+        return Math.max(dist, 0.0);
     }
 
     // TODO: First, find the update rate. This is the reciprocal of the training
     //  count. But make sure it is no more than one, even if the training count is
     //  tiny. Then, multiply it by the distance weight.
+    // GOOD
     public static double effectiveLearningRate(double distWeight, double trainingCounts) {
 		double updateRate = Math.min(1, (1/trainingCounts));
         return updateRate * distWeight;

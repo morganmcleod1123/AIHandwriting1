@@ -28,10 +28,14 @@ public class FloatDrawing {
         pixels[x][y] = value;
     }
 
+    // TODO: Calculate a weighted average. The argument d1weight is a value
+    //  between zero and one. Each pixel in the returned FloatDrawing
+    //  is calculated as follows:
+    //  d1weight * d1 pixel value + (1.0 - d1weight) * d2 pixel value
     public static FloatDrawing weightedAverageOf(FloatDrawing d1, FloatDrawing d2, double d1weight) {
         FloatDrawing weightedAvg = new FloatDrawing(d1.getWidth(), d1.getHeight());
         for(int i = 0; i < d1.getWidth(); i++){
-            for(int j = 0; j < d1.getHeight(); i++){
+            for(int j = 0; j < d1.getHeight(); j++){
                 weightedAvg.pixels[i][j] = (d1weight * d1.pixels[i][j] + (1.0 - d1weight) * d2.pixels[i][j]);
             }
         }
@@ -53,10 +57,10 @@ public class FloatDrawing {
         // or Calculate an n-dimension Euclidean distance where n is the number of pixels?
         double dist = 0;
         for(int i = 0; i < other.getWidth(); i++){
-            for(int j = 0; j < other.getHeight(); i++){
+            for(int j = 0; j < other.getHeight(); j++){
                 double point1 = pixels[i][j];
                 double point2 = other.pixels[i][j];
-                dist += Math.sqrt(Math.pow((point1),2.0) + Math.pow(point2,2.0));
+                dist += Math.pow(point2 - point1, 2.0);
             }
         }
         return dist;
